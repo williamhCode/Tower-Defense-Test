@@ -1,9 +1,14 @@
-from buildings import Barrier
-from timer import Timer
-from player import Player
-from enemies import Enemy
+# pygame
 import pygame
 from pygame.locals import *
+
+from timer import Timer
+from player import Player
+
+import time
+import math
+
+from collision import AABB_collision_resolution
 
 WHITE = (255,255,255)
 TILE_SIZE = 32
@@ -12,6 +17,9 @@ def main():
     pygame.init()
     
     screen = pygame.display.set_mode((1280,720), vsync = 0)
+    
+    # imports for objects with image caching (has to be after pygame.init() and pygame.display.set_mode())
+    from buildings import Barrier
     
     clock = Timer()
     
@@ -44,6 +52,7 @@ def main():
                 i = pos[0] // TILE_SIZE
                 j = pos[1] // TILE_SIZE
                 barrier = Barrier(i*TILE_SIZE, j*TILE_SIZE)
+                
                 buildings[(i,j)] = barrier
                 buildings_sprites.add(barrier)
                     
@@ -70,13 +79,21 @@ def main():
         fps = clock.get_fps()
         pygame.display.set_caption(f'Running at {fps :.4f}.')
         
-        # Background --------------------------------------------- #
-        screen.fill(WHITE)
+        # Update ------------------------------------------------- #
+        player.update(dt, forwards, sideways)
+        
+        # player-building collision
+        p_sprite = player.sprite
+        collided = pygame.sprite.spritecollide(p_sprite, buildings_sprites, False)
+        # sort from nearest to prevent edge clipping
+        p_pos = (p_sprite.rect.x, p_sprite.rect.y)
+        collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), p_pos))
+        # collision resolution
+        for building in collided:
+            AABB_collision_resolution(building, player.sprite)
         
         # Render ------------------------------------------------- #
-        player.update(dt, forwards, sideways)
-        # buildings_sprites.update()
-        
+        screen.fill(WHITE)
         
         player.draw(screen)
         buildings_sprites.draw(screen)
