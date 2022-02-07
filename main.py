@@ -68,12 +68,13 @@ def main():
         # Update ------------------------------------------------- #
         player.update(dt, forwards, sideways)
         
-        # player building collision
+        # player-building collision
         p_sprite = player.sprite
         collided = pygame.sprite.spritecollide(p_sprite, buildings_sprites, False)
-        p_pos = (p_sprite.rect.x, p_sprite.rect.y)
         # sort from nearest to prevent edge clipping
+        p_pos = (p_sprite.rect.x, p_sprite.rect.y)
         collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), p_pos))
+        # collision resolution
         for building in collided:
             AABB_collision_resolution(building, player.sprite)
         
