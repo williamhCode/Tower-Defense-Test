@@ -24,6 +24,8 @@ class Timer:
                 
         if self.unprocessed > frame_cap:
             self.unprocessed = frame_cap
+            if self.unprocessed > frame_cap:
+                self.unprocessed = frame_cap
                 
         dt = time.perf_counter() - self.prev_time
         self.prev_time = time.perf_counter()
