@@ -22,8 +22,6 @@ class Timer:
                 self.unprocessed += time_2 - self.time
                 self.time = time_2
                 
-        if self.unprocessed > frame_cap:
-            self.unprocessed = frame_cap
             if self.unprocessed > frame_cap:
                 self.unprocessed = frame_cap
                 
