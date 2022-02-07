@@ -41,10 +41,7 @@ def main():
                 pos = pygame.mouse.get_pos()
                 i = pos[0] // TILE_SIZE
                 j = pos[1] // TILE_SIZE
-                t1 = time.perf_counter()
                 barrier = Barrier(i*TILE_SIZE, j*TILE_SIZE)
-                t2 = time.perf_counter()
-                # print(t2 - t1)
                 
                 buildings[(i,j)] = barrier
                 buildings_sprites.add(barrier)
@@ -75,6 +72,7 @@ def main():
         p_sprite = player.sprite
         collided = pygame.sprite.spritecollide(p_sprite, buildings_sprites, False)
         p_pos = (p_sprite.rect.x, p_sprite.rect.y)
+        # sort from nearest to prevent edge clipping
         collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), p_pos))
         for building in collided:
             AABB_collision_resolution(building, player.sprite)
