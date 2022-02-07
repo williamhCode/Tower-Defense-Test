@@ -1,7 +1,8 @@
 from buildings import Barrier
-import pygame
 from timer import Timer
 from player import Player
+from enemies import Enemy
+import pygame
 from pygame.locals import *
 
 WHITE = (255,255,255)
@@ -15,13 +16,19 @@ def main():
     clock = Timer()
     
     buildings = {}
-    buildings_sprites = pygame.sprite.Group()
     
+    # Sprite Groups ---------------------------------------------- #
+    buildings_sprites = pygame.sprite.Group()
+    enemies_sprites = pygame.sprite.Group()
     player = pygame.sprite.GroupSingle()
+
+    # Player ----------------------------------------------------- #
     player.add(Player(500,500))
     
     running = True
+
     while running:
+
         # Events ------------------------------------------------- #
         for event in pygame.event.get():
 
@@ -54,6 +61,10 @@ def main():
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             sideways += 1
         
+        player_location = player.sprites()[0].rect.center
+        tx = player_location[0]
+        ty = player_location[1]
+
         # Timer -------------------------------------------------- #
         dt = clock.tick(60)
         fps = clock.get_fps()
