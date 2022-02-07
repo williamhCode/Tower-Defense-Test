@@ -4,6 +4,7 @@ from player import Player
 from pygame.locals import *
 
 white = (255,255,255)
+#ncieniec
 
 def main():
     pygame.init()
