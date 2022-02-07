@@ -17,7 +17,6 @@ def main():
     
     running = True
     while running:
-        
         # Events ------------------------------------------------- #
         for event in pygame.event.get():
 
@@ -30,17 +29,17 @@ def main():
                     
         keys = pygame.key.get_pressed()
         
-        sideways = 0
         forwards = 0
+        sideways = 0
         
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            sideways -= 1
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            sideways += 1
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             forwards += 1
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             forwards -= 1
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            sideways -= 1
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            sideways += 1
         
         # Timer -------------------------------------------------- #
         dt = clock.tick(60)

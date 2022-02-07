@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
 
     def move(self, dt, forwards, sideways):
         speed = self.speed * dt
-        if abs(forwards) and abs(sideways):
+        if forwards & sideways:
             speed *= math.sqrt(2) / 2
 
         self.rect.y -= forwards * speed
