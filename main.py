@@ -1,10 +1,14 @@
-from collision import AABB_collision_resolution
+# pygame
 import pygame
+from pygame.locals import *
+
 from timer import Timer
 from player import Player
-from pygame.locals import *
+
 import time
 import math
+
+from collision import AABB_collision_resolution
 
 WHITE = (255,255,255)
 TILE_SIZE = 32
