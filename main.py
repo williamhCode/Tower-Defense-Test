@@ -1,10 +1,11 @@
+from buildings import Barrier
 import pygame
 from timer import Timer
 from player import Player
 from pygame.locals import *
 
-white = (255,255,255)
-#ncieniec
+WHITE = (255,255,255)
+TILE_SIZE = 32
 
 def main():
     pygame.init()
@@ -12,6 +13,9 @@ def main():
     screen = pygame.display.set_mode((1280,720), vsync = 0)
     
     clock = Timer()
+    
+    buildings = {}
+    buildings_sprites = pygame.sprite.Group()
     
     player = pygame.sprite.GroupSingle()
     player.add(Player(500,500))
@@ -27,6 +31,14 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+                    
+            if event.type == MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                i = pos[0] // TILE_SIZE
+                j = pos[1] // TILE_SIZE
+                barrier = Barrier(i*TILE_SIZE, j*TILE_SIZE)
+                buildings[(i,j)] = barrier
+                buildings_sprites.add(barrier)
                     
         keys = pygame.key.get_pressed()
         
@@ -48,12 +60,15 @@ def main():
         pygame.display.set_caption(f'Running at {fps :.4f}.')
         
         # Background --------------------------------------------- #
-        screen.fill(white)
+        screen.fill(WHITE)
         
         # Render ------------------------------------------------- #
         player.update(dt, forwards, sideways)
+        # buildings_sprites.update()
+        
         
         player.draw(screen)
+        buildings_sprites.draw(screen)
         
         # Update ------------------------------------------------- #
         pygame.display.flip()
