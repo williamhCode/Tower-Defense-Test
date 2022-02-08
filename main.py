@@ -25,8 +25,8 @@ def main():
     buildings = {}
     
     # Sprite Groups ---------------------------------------------- #
-    buildings_sprites = pygame.sprite.Group()
-    enemies_sprites = pygame.sprite.Group()
+    buildings_list = pygame.sprite.Group()
+    enemies_list = pygame.sprite.Group()
     player_sprite = pygame.sprite.GroupSingle()
     
     # Player ----------------------------------------------------- #
@@ -64,11 +64,11 @@ def main():
                     
                     barrier = Barrier(x, y)
                     buildings[(i,j)] = barrier
-                    buildings_sprites.add(barrier)
+                    buildings_list.add(barrier)
                     
                 if event.button == 3:
                     enemy = Enemy(pos[0] - TILE_SIZE/2, pos[1] - TILE_SIZE/2)
-                    enemies_sprites.add(enemy)
+                    enemies_list.add(enemy)
                     
         keys = pygame.key.get_pressed()
         
@@ -85,16 +85,16 @@ def main():
             sideways += 1
             
         # Movement ------------------------------------------------ #
-        for enemy in enemies_sprites:
+        for enemy in enemies_list:
             enemy.move(dt, player.pos)
         player.move(dt, forwards, sideways)
         
         # Update ------------------------------------------------- #
-        enemies_sprites.update()
+        enemies_list.update()
         player.update()
         
         # player-building collision
-        collided = pygame.sprite.spritecollide(player, buildings_sprites, False)
+        collided = pygame.sprite.spritecollide(player, buildings_list, False)
         # sort from nearest to prevent edge clipping
         collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (player.pos.x, player.pos.y)))
         # collision resolution
@@ -102,7 +102,7 @@ def main():
             AABB_collision_resolution(player, building)
             
         # enemy-building collision
-        collided_dict = pygame.sprite.groupcollide(enemies_sprites, buildings_sprites, False, False)
+        collided_dict = pygame.sprite.groupcollide(enemies_list, buildings_list, False, False)
         for enemy, collided in collided_dict.items():
             collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (enemy.pos.x, enemy.pos.y)))
             for building in collided:
@@ -111,8 +111,8 @@ def main():
         # Render ------------------------------------------------- #
         screen.fill((200, 200, 200))
         
-        buildings_sprites.draw(screen)
-        enemies_sprites.draw(screen)
+        buildings_list.draw(screen)
+        enemies_list.draw(screen)
         player_sprite.draw(screen)
         
         pygame.display.flip()

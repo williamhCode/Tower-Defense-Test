@@ -18,7 +18,7 @@ class Barrier(pygame.sprite.Sprite):
         self.image = self.sprites[self.current_sprite]
         self.rect = self.image.get_rect(topleft = (x,y))
 
-        self.health = random.randint(1,10)
+        self.health = random.randint(1, 10)
 
     def kill(self):
         super().kill() 

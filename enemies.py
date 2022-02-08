@@ -1,6 +1,7 @@
 import pygame 
 from pygame.math import Vector2
 
+
 class Enemy(pygame.sprite.Sprite):
     
     sprites = None
