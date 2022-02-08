@@ -117,9 +117,7 @@ def main():
         enemies_sprites.draw(screen)
         player_sprite.draw(screen)
         
-        # Update ------------------------------------------------- #
         pygame.display.flip()
-        
             
 if __name__ == '__main__':
     main()
