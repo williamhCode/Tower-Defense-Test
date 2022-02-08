@@ -1,5 +1,4 @@
 # pygame
-from tkinter import LEFT, RIGHT
 import pygame
 from pygame.locals import *
 
