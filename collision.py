@@ -22,9 +22,9 @@ def proj_min_max(rect: Rect):
     return projs
 
 # Sprite.rect = top, left, width, height
-def AABB_collision_resolution(static_obj: Sprite, dynamic_obj: Sprite):
-    static_projs = proj_min_max(static_obj.rect)
+def AABB_collision_resolution(dynamic_obj: Sprite, static_obj: Sprite):
     dynamic_projs = proj_min_max(dynamic_obj.rect)
+    static_projs = proj_min_max(static_obj.rect)
     
     # find least penetration
     min_p = float('inf')
@@ -41,5 +41,6 @@ def AABB_collision_resolution(static_obj: Sprite, dynamic_obj: Sprite):
             min_axis_p = normals[i]
             
     # resolve
-    dynamic_obj.rect.x += min_axis_p[0] * min_p
-    dynamic_obj.rect.y += min_axis_p[1] * min_p
+    dynamic_obj.pos.x += min_axis_p[0] * min_p
+    dynamic_obj.pos.y += min_axis_p[1] * min_p
+    dynamic_obj.update_rect()

@@ -1,6 +1,9 @@
+from turtle import update
 import pygame
 from pygame.locals import *
+from pygame.math import Vector2
 import math
+
 
 class Player(pygame.sprite.Sprite):
 
@@ -13,6 +16,9 @@ class Player(pygame.sprite.Sprite):
         self.image = self.sprites[self.current_sprite]
         self.rect = self.image.get_rect(topleft = (x,y))
         
+        self.pos = Vector2(x, y)
+        self.vel = Vector2(0, 0)
+        
         self.speed = 400
 
     def move(self, dt, forwards, sideways):
@@ -20,9 +26,14 @@ class Player(pygame.sprite.Sprite):
         if forwards & sideways:
             speed *= math.sqrt(2) / 2
 
-        self.rect.y -= forwards * speed
-        self.rect.x += sideways * speed
+        self.vel = Vector2(sideways * speed, -forwards * speed)
+        
+    def update_rect(self):
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
 
-    def update(self, dt, forwards, sideways):
-        self.move(dt, forwards, sideways)
+    def update(self):
+        self.pos += self.vel
+        self.update_rect()
+        
         self.image = self.sprites[self.current_sprite]

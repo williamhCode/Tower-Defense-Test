@@ -1,4 +1,5 @@
 # pygame
+from tkinter import LEFT, RIGHT
 import pygame
 from pygame.locals import *
 
@@ -20,6 +21,7 @@ def main():
     
     # imports for objects with image caching (has to be after pygame.init() and pygame.display.set_mode())
     from buildings import Barrier
+    from enemies import Enemy
     
     clock = Timer()
     
@@ -28,14 +30,20 @@ def main():
     # Sprite Groups ---------------------------------------------- #
     buildings_sprites = pygame.sprite.Group()
     enemies_sprites = pygame.sprite.Group()
-    player = pygame.sprite.GroupSingle()
-
+    player_sprite = pygame.sprite.GroupSingle()
+    
     # Player ----------------------------------------------------- #
-    player.add(Player(500,500))
+    player = Player(500,500)
+    player_sprite.add(player)
     
     running = True
 
     while running:
+        
+        # Timer -------------------------------------------------- #
+        dt = clock.tick(60)
+        fps = clock.get_fps()
+        pygame.display.set_caption(f'Running at {fps :.4f}.')
 
         # Events ------------------------------------------------- #
         for event in pygame.event.get():
@@ -49,12 +57,21 @@ def main():
                     
             if event.type == MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                i = pos[0] // TILE_SIZE
-                j = pos[1] // TILE_SIZE
-                barrier = Barrier(i*TILE_SIZE, j*TILE_SIZE)
-                
-                buildings[(i,j)] = barrier
-                buildings_sprites.add(barrier)
+            
+                if event.button == 1:
+                    i = pos[0] // TILE_SIZE
+                    j = pos[1] // TILE_SIZE
+                    
+                    x = i * TILE_SIZE
+                    y = j * TILE_SIZE
+                    
+                    barrier = Barrier(x, y)
+                    buildings[(i,j)] = barrier
+                    buildings_sprites.add(barrier)
+                    
+                if event.button == 3:
+                    enemy = Enemy(pos[0] - TILE_SIZE/2, pos[1] - TILE_SIZE/2)
+                    enemies_sprites.add(enemy)
                     
         keys = pygame.key.get_pressed()
         
@@ -69,34 +86,36 @@ def main():
             sideways -= 1
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             sideways += 1
-        
-        player_location = player.sprites()[0].rect.center
-        tx = player_location[0]
-        ty = player_location[1]
-
-        # Timer -------------------------------------------------- #
-        dt = clock.tick(60)
-        fps = clock.get_fps()
-        pygame.display.set_caption(f'Running at {fps :.4f}.')
+            
+        # Movement ------------------------------------------------ #
+        for enemy in enemies_sprites:
+            enemy.move(dt, player.pos)
+        player.move(dt, forwards, sideways)
         
         # Update ------------------------------------------------- #
-        player.update(dt, forwards, sideways)
+        enemies_sprites.update()
+        player.update()
         
         # player-building collision
-        p_sprite = player.sprite
-        collided = pygame.sprite.spritecollide(p_sprite, buildings_sprites, False)
+        collided = pygame.sprite.spritecollide(player, buildings_sprites, False)
         # sort from nearest to prevent edge clipping
-        p_pos = (p_sprite.rect.x, p_sprite.rect.y)
-        collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), p_pos))
+        collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (player.rect.x, player.rect.y)))
         # collision resolution
         for building in collided:
-            AABB_collision_resolution(building, player.sprite)
+            AABB_collision_resolution(player, building)
+            
+        # enemy-building collision
+        collided_dict = pygame.sprite.groupcollide(enemies_sprites, buildings_sprites, False, False)
+        for enemy, collided in collided_dict.items():
+            for building in collided:
+                AABB_collision_resolution(enemy, building)
         
         # Render ------------------------------------------------- #
-        screen.fill(WHITE)
+        screen.fill((200, 200, 200))
         
-        player.draw(screen)
         buildings_sprites.draw(screen)
+        enemies_sprites.draw(screen)
+        player_sprite.draw(screen)
         
         # Update ------------------------------------------------- #
         pygame.display.flip()
