@@ -99,7 +99,7 @@ def main():
         # player-building collision
         collided = pygame.sprite.spritecollide(player, buildings_sprites, False)
         # sort from nearest to prevent edge clipping
-        collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (player.rect.x, player.rect.y)))
+        collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (player.pos.x, player.pos.y)))
         # collision resolution
         for building in collided:
             AABB_collision_resolution(player, building)
@@ -107,6 +107,7 @@ def main():
         # enemy-building collision
         collided_dict = pygame.sprite.groupcollide(enemies_sprites, buildings_sprites, False, False)
         for enemy, collided in collided_dict.items():
+            collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (enemy.pos.x, enemy.pos.y)))
             for building in collided:
                 AABB_collision_resolution(enemy, building)
         
