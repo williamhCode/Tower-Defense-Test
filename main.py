@@ -5,6 +5,8 @@ from pygame.locals import *
 
 from timer import Timer
 from player import Player
+from buildings import Barrier
+from enemies import Enemy
 
 import time
 import math
@@ -18,10 +20,6 @@ def main():
     pygame.init()
     
     screen = pygame.display.set_mode((1280,720), vsync = 0)
-    
-    # imports for objects with image caching (has to be after pygame.init() and pygame.display.set_mode())
-    from buildings import Barrier
-    from enemies import Enemy
     
     clock = Timer()
     

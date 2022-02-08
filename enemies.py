@@ -3,11 +3,15 @@ from pygame.math import Vector2
 
 class Enemy(pygame.sprite.Sprite):
     
-    sprites = [pygame.image.load('assets/enemies/enemy_1.png').convert(),
-               ]
+    sprites = None
     
     def __init__(self, x, y):
         super().__init__()
+        
+        if Enemy.sprites is None:
+            Enemy.sprites = [pygame.image.load('assets/enemies/enemy_1.png').convert()]
+            
+        self.sprites = Enemy.sprites
 
         self.current_sprite = 0
         self.image = self.sprites[self.current_sprite]

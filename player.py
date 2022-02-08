@@ -6,11 +6,16 @@ import math
 
 
 class Player(pygame.sprite.Sprite):
+    
+    sprites = None
 
     def __init__(self, x, y):
         super().__init__()
-        self.sprites = []
-        self.sprites.append(pygame.image.load('assets/player/player_1.png').convert())
+        
+        if Player.sprites is None:
+            Player.sprites = [pygame.image.load('assets/player/player_1.png').convert()]
+        
+        self.sprites = Player.sprites
         
         self.current_sprite = 0
         self.image = self.sprites[self.current_sprite]
