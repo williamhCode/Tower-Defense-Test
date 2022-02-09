@@ -35,4 +35,7 @@ class Enemy(pygame.sprite.Sprite):
         self.pos += self.vel
         self.update_rect()
         
+        if self.health <= 0:
+            self.kill()
+        
         self.image = self.sprites[self.current_sprite]
