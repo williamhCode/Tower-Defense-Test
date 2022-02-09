@@ -71,13 +71,16 @@ class RangedTower(pygame.sprite.Sprite):
         if self.elapsed_time < self.cooldown:
             return None
         
-        self.elapsed_time = 0
-        
         for enemy in enemies:
             if (enemy.pos - self.pos).length() < self.range:
+                self.elapsed_time = 0   
                 enemy.health -= self.damage
-                offset = Vector2(TILE_SIZE/2, TILE_SIZE/2)
+                
+                offset = Vector2(TILE_SIZE/2, TILE_SIZE/2)     
                 return [self.pos + offset, enemy.pos + offset]
+            
+    def draw_range(self, screen):
+        pygame.draw.circle(screen, BLACK, (self.pos.x+TILE_SIZE/2, self.pos.y+TILE_SIZE/2), self.range, 1)
         
     def update(self):
         if self.health <= 0:

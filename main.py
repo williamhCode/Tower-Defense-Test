@@ -85,7 +85,7 @@ def main():
                     
                     if event.key == pygame.K_3:
                         if tiles[(i,j)] == "Grass":
-                            tower = RangedTower(x, y, 500, 1)
+                            tower = RangedTower(x, y, 150, 1)
                             towers_list.add(tower)
                             buildings_list.add(tower)
 
@@ -113,7 +113,7 @@ def main():
         for tower in towers_list:
             info = tower.shoot(enemies_list, dt)
             if info != None:
-                projectiles_list.append(info + [1])
+                projectiles_list.append(info + [0.5])
         
         # Update ------------------------------------------------- #
         barriers_list.update()
@@ -148,6 +148,9 @@ def main():
         towers_list.draw(screen)
         enemies_list.draw(screen)
         player_sprite.draw(screen)
+        
+        for tower in towers_list:
+            tower.draw_range(screen)
         
         for info in projectiles_list:
             pygame.draw.line(screen, (255, 0, 0), info[0], info[1], 2)
