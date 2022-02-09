@@ -4,16 +4,16 @@ from pygame.locals import *
 
 from timer import Timer
 from player import Player
-from buildings import Barrier
+from buildings import Barrier, RangedTower
 from enemies import Enemy
+
+from constants import *
 
 import time
 import math
 
 from collision import AABB_collision_resolution
 
-WHITE = (255,255,255)
-TILE_SIZE = 32
 
 def main():
     pygame.init()
@@ -22,12 +22,21 @@ def main():
     
     clock = Timer()
     
-    buildings = {}
+    tiles = {}
+
+    for i in range(0,1280//TILE_SIZE):
+        for j in range(0,720//TILE_SIZE):
+            tiles[(i,j)] = "Grass"
     
     # Sprite Groups ---------------------------------------------- #
+    barriers_list = pygame.sprite.Group()
+    towers_list: list[RangedTower] = pygame.sprite.Group()
     buildings_list = pygame.sprite.Group()
+    
     enemies_list = pygame.sprite.Group()
     player_sprite = pygame.sprite.GroupSingle()
+    
+    projectiles_list = []
     
     # Player ----------------------------------------------------- #
     player = Player(500,500)
@@ -49,27 +58,39 @@ def main():
                 running = False
                 
             if event.type == pygame.KEYDOWN:
+                
                 if event.key == pygame.K_ESCAPE:
                     running = False
                     
-            if event.type == MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-            
-                if event.button == 1:
+                if event.key in SPAWN_KEYS:
+                    pos = pygame.mouse.get_pos()
+                        
                     i = pos[0] // TILE_SIZE
                     j = pos[1] // TILE_SIZE
                     
                     x = i * TILE_SIZE
                     y = j * TILE_SIZE
                     
-                    barrier = Barrier(x, y)
-                    buildings[(i,j)] = barrier
-                    buildings_list.add(barrier)
+                    if event.key == pygame.K_1:
+                        enemy = Enemy(pos[0] - TILE_SIZE/2, pos[1] - TILE_SIZE/2)
+                        enemies_list.add(enemy)
+                
+                    if event.key == pygame.K_2:
+                        if tiles[(i,j)] == "Grass":
+                            barrier = Barrier(x, y)
+                            barriers_list.add(barrier)
+                            buildings_list.add(barrier)
+                        
+                            tiles[(i,j)] = "Barrier"
                     
-                if event.button == 3:
-                    enemy = Enemy(pos[0] - TILE_SIZE/2, pos[1] - TILE_SIZE/2)
-                    enemies_list.add(enemy)
-                    
+                    if event.key == pygame.K_3:
+                        if tiles[(i,j)] == "Grass":
+                            tower = RangedTower(x, y, 500, 1)
+                            towers_list.add(tower)
+                            buildings_list.add(tower)
+
+                            tiles[(i,j)] = "RangedTower"
+                        
         keys = pygame.key.get_pressed()
         
         forwards = 0
@@ -84,14 +105,26 @@ def main():
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             sideways += 1
             
-        # Movement ------------------------------------------------ #
+        # Movement/Logic ------------------------------------------------ #
         for enemy in enemies_list:
             enemy.move(dt, player.pos)
         player.move(dt, forwards, sideways)
         
+        for tower in towers_list:
+            info = tower.shoot(enemies_list, dt)
+            if info != None:
+                projectiles_list.append(info + [1])
+        
         # Update ------------------------------------------------- #
+        barriers_list.update()
+        towers_list.update()
         enemies_list.update()
         player.update()
+        
+        for info in projectiles_list:
+            info[2] -= dt
+            if info[2] <= 0:
+                projectiles_list.remove(info)
         
         # player-building collision
         collided = pygame.sprite.spritecollide(player, buildings_list, False)
@@ -111,9 +144,13 @@ def main():
         # Render ------------------------------------------------- #
         screen.fill((200, 200, 200))
         
-        buildings_list.draw(screen)
+        barriers_list.draw(screen)
+        towers_list.draw(screen)
         enemies_list.draw(screen)
         player_sprite.draw(screen)
+        
+        for info in projectiles_list:
+            pygame.draw.line(screen, (255, 0, 0), info[0], info[1], 2)
         
         pygame.display.flip()
             
