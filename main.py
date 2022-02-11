@@ -4,7 +4,7 @@ from pygame.locals import *
 
 from timer import Timer
 from player import Player
-from buildings import Barrier, RangedTower
+from buildings import Barrier, MainBase, Tower
 from enemies import Enemy
 
 from constants import *
@@ -18,23 +18,26 @@ from collision import AABB_collision_resolution
 def main():
     pygame.init()
     
-    screen = pygame.display.set_mode((1280,720), vsync = 0)
+    screen = pygame.display.set_mode((1280, 720), vsync=0)
     
     clock = Timer()
     
     tiles = {}
 
-    for i in range(0,1280//TILE_SIZE):
-        for j in range(0,720//TILE_SIZE):
+    for i in range(0, 1280//TILE_SIZE+1):
+        for j in range(0, 720//TILE_SIZE+1):
             tiles[(i,j)] = "Grass"
     
     # Sprite Groups ---------------------------------------------- #
     barriers_list = pygame.sprite.Group()
-    towers_list: list[RangedTower] = pygame.sprite.Group()
+    towers_list: list[Tower] = pygame.sprite.Group()
     buildings_list = pygame.sprite.Group()
+    buildings_list.add(MainBase(TILE_SIZE*19, TILE_SIZE*9))
     
     enemies_list = pygame.sprite.Group()
     player_sprite = pygame.sprite.GroupSingle()
+    
+    all_list = [barriers_list, towers_list, buildings_list, enemies_list, player_sprite]
     
     projectiles_list = []
     
@@ -86,15 +89,21 @@ def main():
                             barriers_list.add(barrier)
                             buildings_list.add(barrier)
                         
-                            tiles[(i,j)] = "Barrier"
+                            tiles[(i,j)] = barrier
                     
                     if event.key == pygame.K_3:
                         if tiles[(i,j)] == "Grass":
-                            tower = RangedTower(x, y, 150, 1)
+                            tower = Tower(x, y, 150, 1)
                             towers_list.add(tower)
                             buildings_list.add(tower)
 
-                            tiles[(i,j)] = "RangedTower"
+                            tiles[(i,j)] = tower
+                            
+                    if event.key == pygame.K_e:
+                        curr = tiles[(i,j)]
+                        if isinstance(curr, Barrier | Tower):
+                            curr.kill()
+                            tiles[(i,j)] = "Grass"
                         
         keys = pygame.key.get_pressed()
         
@@ -121,10 +130,8 @@ def main():
                 projectiles_list.append(info + [0.2])
         
         # Update ------------------------------------------------- #
-        barriers_list.update()
-        towers_list.update()
-        enemies_list.update()
-        player.update()
+        for group in all_list:
+            group.update()
         
         for info in projectiles_list:
             info[2] -= dt
@@ -149,10 +156,8 @@ def main():
         # Render ------------------------------------------------- #
         screen.fill((200, 200, 200))
         
-        barriers_list.draw(screen)
-        towers_list.draw(screen)
-        enemies_list.draw(screen)
-        player_sprite.draw(screen)
+        for group in all_list:
+            group.draw(screen)
         
         for info in projectiles_list:
             pygame.draw.line(screen, (255, 0, 0), info[0], info[1], 2)
