@@ -38,6 +38,8 @@ def main():
     
     projectiles_list = []
     
+    debug = False
+    
     # Player ----------------------------------------------------- #
     player = Player(500,500)
     player_sprite.add(player)
@@ -61,6 +63,9 @@ def main():
                 
                 if event.key == pygame.K_ESCAPE:
                     running = False
+                    
+                if event.key == pygame.K_f:
+                    debug = not debug
                     
                 if event.key in SPAWN_KEYS:
                     pos = pygame.mouse.get_pos()
@@ -113,7 +118,7 @@ def main():
         for tower in towers_list:
             info = tower.shoot(enemies_list, dt)
             if info != None:
-                projectiles_list.append(info + [0.5])
+                projectiles_list.append(info + [0.2])
         
         # Update ------------------------------------------------- #
         barriers_list.update()
@@ -149,11 +154,12 @@ def main():
         enemies_list.draw(screen)
         player_sprite.draw(screen)
         
-        for tower in towers_list:
-            tower.draw_range(screen)
-        
         for info in projectiles_list:
             pygame.draw.line(screen, (255, 0, 0), info[0], info[1], 2)
+            
+        if debug:
+            for tower in towers_list:
+                tower.draw_range(screen)
         
         pygame.display.flip()
             
