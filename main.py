@@ -1,18 +1,49 @@
 # pygame
 import pygame
 from pygame.locals import *
+from environment import Rock, Tree
 
 from timer import Timer
 from player import Player
 from buildings import Barrier, MainBase, Tower
 from enemies import Enemy
-
 from constants import *
 
 import time
 import math
+import random
+import spawning
 
 from collision import AABB_collision_resolution
+
+
+class GroupWrapper:
+    
+    def __init__(self, *sprite_groups: pygame.sprite.Group):
+        self.group = pygame.sprite.Group()
+        self.sprite_groups = [self.group, *sprite_groups]
+        
+        self.update_sprites()
+        
+    def add(self, sprite):
+        self.group.add(sprite)
+        
+    def __iter__(self):
+        return iter(self.sprites)
+        
+    def update_sprites(self):
+        sprites = []
+        for group in self.sprite_groups:
+            sprites += group.sprites()
+        self.sprites = sprites
+    
+    def update(self):
+        for group in self.sprite_groups:
+            group.update()
+            
+    def draw(self, surface):
+        for group in self.sprite_groups:
+            group.draw(surface)
 
 
 def main():
@@ -28,24 +59,23 @@ def main():
         for j in range(0, 720//TILE_SIZE+1):
             tiles[(i,j)] = "Grass"
     
-    # Sprite Groups ---------------------------------------------- #
-    barriers_list = pygame.sprite.Group()
-    towers_list: list[Tower] = pygame.sprite.Group()
-    buildings_list = pygame.sprite.Group()
-    buildings_list.add(MainBase(TILE_SIZE*19, TILE_SIZE*9))
+    # Init Objects ----------------------------------------------------- #
+    game_objects_keys = ('barriers', 'towers', 'env_objects', 'enemies')
+    game_objects = {key: pygame.sprite.Group() for key in game_objects_keys}
+    game_objects['buildings'] = GroupWrapper(game_objects['barriers'], game_objects['towers'])
+    game_objects['player'] = pygame.sprite.GroupSingle()
     
-    enemies_list = pygame.sprite.Group()
-    player_sprite = pygame.sprite.GroupSingle()
-    
-    all_list = [barriers_list, towers_list, buildings_list, enemies_list, player_sprite]
+    static_groups = (game_objects['env_objects'], game_objects['buildings'])
+    dynamic_groups = (game_objects['enemies'], game_objects['player'])
     
     projectiles_list = []
     
     debug = False
     
-    # Player ----------------------------------------------------- #
     player = Player(500,500)
-    player_sprite.add(player)
+    game_objects['player'].add(player)
+    
+    game_objects['buildings'].add(MainBase(600, 300))
     
     running = True
 
@@ -81,29 +111,39 @@ def main():
                     
                     if event.key == pygame.K_1:
                         enemy = Enemy(pos[0] - TILE_SIZE/2, pos[1] - TILE_SIZE/2)
-                        enemies_list.add(enemy)
+                        game_objects['enemies'].add(enemy)
                 
                     if event.key == pygame.K_2:
                         if tiles[(i,j)] == "Grass":
                             barrier = Barrier(x, y)
-                            barriers_list.add(barrier)
-                            buildings_list.add(barrier)
+                            game_objects['barriers'].add(barrier)
                         
                             tiles[(i,j)] = barrier
                     
                     if event.key == pygame.K_3:
                         if tiles[(i,j)] == "Grass":
                             tower = Tower(x, y, 150, 1)
-                            towers_list.add(tower)
-                            buildings_list.add(tower)
-
+                            game_objects['towers'].add(tower)
                             tiles[(i,j)] = tower
                             
+                    if event.key == pygame.K_4:
+                        rock = Rock(*pos)
+                        game_objects['env_objects'].add(rock)
+                        
+                    if event.key == pygame.K_5:
+                        tree = Tree(*pos)
+                        game_objects['env_objects'].add(tree)
+
+                    if event.key == pygame.K_6:
+                        spawning.spawn_environment(random(0,2))
+
                     if event.key == pygame.K_e:
                         curr = tiles[(i,j)]
                         if isinstance(curr, Barrier | Tower):
                             curr.kill()
                             tiles[(i,j)] = "Grass"
+
+        game_objects['buildings'].update_sprites()
                         
         keys = pygame.key.get_pressed()
         
@@ -120,17 +160,17 @@ def main():
             sideways += 1
             
         # Movement/Logic ------------------------------------------------ #
-        for enemy in enemies_list:
+        for enemy in game_objects['enemies']:
             enemy.move(dt, player.pos)
         player.move(dt, forwards, sideways)
         
-        for tower in towers_list:
-            info = tower.shoot(enemies_list, dt)
+        for tower in game_objects['towers']:
+            info = tower.shoot(game_objects['enemies'], dt)
             if info != None:
                 projectiles_list.append(info + [0.2])
         
         # Update ------------------------------------------------- #
-        for group in all_list:
+        for group in game_objects.values():
             group.update()
         
         for info in projectiles_list:
@@ -138,32 +178,28 @@ def main():
             if info[2] <= 0:
                 projectiles_list.remove(info)
         
-        # player-building collision
-        collided = pygame.sprite.spritecollide(player, buildings_list, False)
-        # sort from nearest to prevent edge clipping
-        collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (player.pos.x, player.pos.y)))
-        # collision resolution
-        for building in collided:
-            AABB_collision_resolution(player, building)
-            
-        # enemy-building collision
-        collided_dict = pygame.sprite.groupcollide(enemies_list, buildings_list, False, False)
-        for enemy, collided in collided_dict.items():
-            collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (enemy.pos.x, enemy.pos.y)))
-            for building in collided:
-                AABB_collision_resolution(enemy, building)
-        
+        for dynamic_group in dynamic_groups:
+            for static_group in static_groups:
+                
+                collided_dict = pygame.sprite.groupcollide(dynamic_group, static_group, False, False)
+                
+                for dynamic, collided in collided_dict.items():
+                    collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (dynamic.pos.x, dynamic.pos.y)))
+                    
+                    for static in collided:
+                        AABB_collision_resolution(dynamic, static)
+                
         # Render ------------------------------------------------- #
         screen.fill((200, 200, 200))
         
-        for group in all_list:
+        for group in game_objects.values():
             group.draw(screen)
         
         for info in projectiles_list:
             pygame.draw.line(screen, (255, 0, 0), info[0], info[1], 2)
             
         if debug:
-            for tower in towers_list:
+            for tower in game_objects['towers']:
                 tower.draw_range(screen)
         
         pygame.display.flip()

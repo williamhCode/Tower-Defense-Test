@@ -29,6 +29,7 @@ class Building(ABC, pygame.sprite.Sprite):
     def update(self):
         if self.health <= 0:
             self.kill()
+            
 
 class Barrier(Building):
     
@@ -42,9 +43,8 @@ class Barrier(Building):
             Barrier.sprites = [pygame.image.load('assets/buildings/barrier.png').convert()]
         
         self.sprites = Barrier.sprites
-
-# -----------------------------------------------------------------------------
-
+            
+            
 class Tower(Building):
     
     def __init__(self, x, y, range, damage):
