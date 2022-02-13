@@ -8,11 +8,11 @@ from player import Player
 from buildings import Barrier, MainBase, Tower
 from enemies import Enemy
 from constants import *
-
+from spawning import *
 import time
 import math
 import random
-import spawning
+
 
 from collision import AABB_collision_resolution
 
@@ -44,6 +44,7 @@ class GroupWrapper:
     def draw(self, surface):
         for group in self.sprite_groups:
             group.draw(surface)
+
 
 
 def main():
@@ -135,7 +136,7 @@ def main():
                         game_objects['env_objects'].add(tree)
 
                     if event.key == pygame.K_6:
-                        spawning.spawn_environment(random(0,2))
+                        spawn_environment(randint(0,2), game_objects)
 
                     if event.key == pygame.K_e:
                         curr = tiles[(i,j)]
