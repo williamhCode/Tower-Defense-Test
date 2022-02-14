@@ -54,7 +54,7 @@ class Player(pygame.sprite.Sprite):
 
         self.vel = Vector2(sideways * speed, -forwards * speed)
         
-    def hit(self, env_objects: pygame.sprite.Group()):
+    def hit(self, game_objects):
         
         if self.elapsed_time < self.cooldown:
             return
@@ -63,9 +63,15 @@ class Player(pygame.sprite.Sprite):
         self.hit_ang = 60
         self.update_axe()
         
-        for sprite in env_objects:
+        for sprite in game_objects['enemies']:
             if sprite.rect.colliderect(self.axe_rect):
-                if sprite.being_hit(self.damage):
+                if sprite.damage(self.damage):
+                    self.inventory.add_gold()
+                return
+        
+        for sprite in game_objects['env_objects']:
+            if sprite.rect.colliderect(self.axe_rect):
+                if sprite.damage(self.damage):
                     if isinstance(sprite, Rock):
                         self.inventory.add_stone()
                     elif isinstance(sprite, Tree):

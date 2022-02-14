@@ -24,8 +24,8 @@ class EnvObject(ABC, pygame.sprite.Sprite):
         self.elapsed_time = 0
         self.cooldown = 0.3
         
-    def being_hit(self, damage):
-        self.health -= damage
+    def damage(self, amount):
+        self.health -= amount
         self.damaged = True
         self.elapsed_time = 0
         self.current_sprite = 1
@@ -36,14 +36,14 @@ class EnvObject(ABC, pygame.sprite.Sprite):
         pass
         
     def update(self, dt):
+        if self.health <= 0:
+            self.kill()
+            
         if self.damaged:
             self.elapsed_time += dt
             if self.elapsed_time > self.cooldown:
                 self.damaged = False
                 self.current_sprite = 0
-                
-        if self.health <= 0:
-            self.kill()
             
         self.image = self.sprites[self.current_sprite]
             
@@ -74,7 +74,7 @@ class Tree(EnvObject):
     def __init__(self, x, y):
         super().__init__(x, y)
         
-        self.health = 5
+        self.health = 3
         
     def load_sprites(self):
         if Tree.sprites is None:

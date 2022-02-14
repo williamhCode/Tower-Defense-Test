@@ -68,6 +68,10 @@ def main():
     static_groups = (game_objects['env_objects'], game_objects['buildings'])
     dynamic_groups = (game_objects['enemies'], game_objects['player'])
     
+    # initial spawn
+    for _ in range(50):
+        spawn_environment(randint(0, 2), game_objects)
+    
     projectiles_list = []
     
     debug = False
@@ -98,7 +102,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 
                 if event.button == 1:
-                    player.hit(game_objects['env_objects'])
+                    player.hit(game_objects)
                 
             if event.type == pygame.KEYDOWN:
                 
@@ -186,7 +190,9 @@ def main():
             if info[2] <= 0:
                 projectiles_list.remove(info)
         
+        # collision resolution
         for dynamic_group in dynamic_groups:
+            
             for static_group in static_groups:
                 
                 collided_dict = pygame.sprite.groupcollide(dynamic_group, static_group, False, False)
@@ -214,7 +220,7 @@ def main():
                 tower.draw_range(screen)
                 
         inv = player.inventory
-        print(f'Stone: {inv.stone}, Wood: {inv.wood}')
+        print(f'Stone: {inv.stone}, Wood: {inv.wood}, Gold: {inv.gold}')
         
         pygame.display.flip()
             
