@@ -146,7 +146,7 @@ def main():
                         game_objects['env_objects'].add(tree)
 
                     if event.key == pygame.K_6:
-                        spawn_environment(randint(0, 2), game_objects)
+                        spawn_environment(randint(0, 1), game_objects)
 
                     if event.key == pygame.K_e:
                         curr = tiles[(i,j)]

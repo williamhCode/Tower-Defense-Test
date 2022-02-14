@@ -80,8 +80,11 @@ class Player(pygame.sprite.Sprite):
         
     def set_axe_dir(self, mouse_pos):
         mouse_pos = Vector2(mouse_pos)
-        self.axe_dir = mouse_pos - (self.pos + (16, 0))
-        self.axe_dir.normalize_ip()
+        self.axe_dir = mouse_pos - Vector2(self.pos + (16, 0))
+        if self.axe_dir.length_squared() == 0:
+            self.axe_dir = Vector2(0, -1) 
+        else:
+            self.axe_dir.normalize_ip()
         
     def update_axe(self):
         self.axe_pos = self.pos + (16, 16) + self.axe_dir * self.axe_radius
