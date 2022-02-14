@@ -20,13 +20,15 @@ class Building(ABC, pygame.sprite.Sprite):
         self.image = self.sprites[self.current_sprite]
         self.rect = self.image.get_rect(topleft = (x, y))
         
+        self.pos = Vector2(x, y)
+        
         self.health = 0
         
     @abstractmethod
     def load_sprites(self):
         pass
         
-    def update(self):
+    def update(self, dt):
         if self.health <= 0:
             self.kill()
             
@@ -49,8 +51,6 @@ class Tower(Building):
     
     def __init__(self, x, y, range, damage):
         super().__init__(x, y)
-        
-        self.pos = Vector2(x, y)
         
         self.health = 10
         self.damage = damage

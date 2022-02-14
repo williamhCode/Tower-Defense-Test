@@ -37,15 +37,14 @@ class GroupWrapper:
             sprites += group.sprites()
         self.sprites = sprites
     
-    def update(self):
+    def update(self, dt):
         for group in self.sprite_groups:
-            group.update()
+            group.update(dt)
             
     def draw(self, surface):
         for group in self.sprite_groups:
             group.draw(surface)
-
-
+            
 
 def main():
     pygame.init()
@@ -76,7 +75,8 @@ def main():
     player = Player(500,500)
     game_objects['player'].add(player)
     
-    game_objects['buildings'].add(MainBase(600, 300))
+    base = MainBase(600, 300)
+    game_objects['buildings'].add(base)
     
     running = True
 
@@ -88,10 +88,17 @@ def main():
         pygame.display.set_caption(f'Running at {fps :.4f}.')
 
         # Events ------------------------------------------------- #
+        pos = pygame.mouse.get_pos()
+        
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
                 running = False
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                
+                if event.button == 1:
+                    player.hit(game_objects['env_objects'])
                 
             if event.type == pygame.KEYDOWN:
                 
@@ -102,7 +109,6 @@ def main():
                     debug = not debug
                     
                 if event.key in SPAWN_KEYS:
-                    pos = pygame.mouse.get_pos()
                         
                     i = pos[0] // TILE_SIZE
                     j = pos[1] // TILE_SIZE
@@ -136,7 +142,7 @@ def main():
                         game_objects['env_objects'].add(tree)
 
                     if event.key == pygame.K_6:
-                        spawn_environment(randint(0,2), game_objects)
+                        spawn_environment(randint(0, 2), game_objects)
 
                     if event.key == pygame.K_e:
                         curr = tiles[(i,j)]
@@ -162,17 +168,18 @@ def main():
             
         # Movement/Logic ------------------------------------------------ #
         for enemy in game_objects['enemies']:
-            enemy.move(dt, player.pos)
+            enemy.move(dt, base.pos + (base.rect.width/4, base.rect.height/4))
         player.move(dt, forwards, sideways)
+        player.set_axe_dir(pos)
         
         for tower in game_objects['towers']:
             info = tower.shoot(game_objects['enemies'], dt)
             if info != None:
                 projectiles_list.append(info + [0.2])
         
-        # Update ------------------------------------------------- #
+        # Update ------------------------------------------------- # 
         for group in game_objects.values():
-            group.update()
+            group.update(dt)
         
         for info in projectiles_list:
             info[2] -= dt
@@ -199,9 +206,15 @@ def main():
         for info in projectiles_list:
             pygame.draw.line(screen, (255, 0, 0), info[0], info[1], 2)
             
+        player.draw_axe(screen)
+        
+            
         if debug:
             for tower in game_objects['towers']:
                 tower.draw_range(screen)
+                
+        inv = player.inventory
+        print(f'Stone: {inv.stone}, Wood: {inv.wood}')
         
         pygame.display.flip()
             
