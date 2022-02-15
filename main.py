@@ -48,6 +48,8 @@ class GroupWrapper:
 
 def main():
     pygame.init()
+    pygame.font.init()
+    font = pygame.font.SysFont('Comic Sans MS', 20)
     
     screen = pygame.display.set_mode((1280, 720), vsync=0)
     
@@ -69,7 +71,7 @@ def main():
     dynamic_groups = (game_objects['enemies'], game_objects['player'])
     
     # initial spawn
-    for _ in range(50):
+    for _ in range(30):
         spawn_environment(randint(0, 2), game_objects)
     
     projectiles_list = []
@@ -128,6 +130,7 @@ def main():
                         if tiles[(i,j)] == "Grass":
                             barrier = Barrier(x, y)
                             game_objects['barriers'].add(barrier)
+                            player.inventory.wood -= 3
                         
                             tiles[(i,j)] = barrier
                     
@@ -135,6 +138,9 @@ def main():
                         if tiles[(i,j)] == "Grass":
                             tower = Tower(x, y, 150, 1)
                             game_objects['towers'].add(tower)
+                            player.inventory.wood -= 2
+                            player.inventory.stone -= 2
+                            
                             tiles[(i,j)] = tower
                             
                     if event.key == pygame.K_4:
@@ -177,7 +183,7 @@ def main():
         player.set_axe_dir(pos)
         
         for tower in game_objects['towers']:
-            info = tower.shoot(game_objects['enemies'], dt)
+            info = tower.shoot(game_objects['enemies'])
             if info != None:
                 projectiles_list.append(info + [0.2])
         
@@ -193,6 +199,10 @@ def main():
         # collision resolution
         for dynamic_group in dynamic_groups:
             
+            is_enemies = False
+            if dynamic_group is game_objects['enemies']:
+                is_enemies = True
+            
             for static_group in static_groups:
                 
                 collided_dict = pygame.sprite.groupcollide(dynamic_group, static_group, False, False)
@@ -201,7 +211,9 @@ def main():
                     collided.sort(key = lambda sprite: math.dist((sprite.rect.x, sprite.rect.y), (dynamic.pos.x, dynamic.pos.y)))
                     
                     for static in collided:
-                        AABB_collision_resolution(dynamic, static)
+                        if AABB_collision_resolution(dynamic, static) and is_enemies:
+                            dynamic.attack(static)
+                            # pass
                 
         # Render ------------------------------------------------- #
         screen.fill((200, 200, 200))
@@ -213,14 +225,18 @@ def main():
             pygame.draw.line(screen, (255, 0, 0), info[0], info[1], 2)
             
         player.draw_axe(screen)
-        
             
         if debug:
             for tower in game_objects['towers']:
                 tower.draw_range(screen)
                 
         inv = player.inventory
-        print(f'Stone: {inv.stone}, Wood: {inv.wood}, Gold: {inv.gold}')
+        text = f'Stone: {inv.stone}, Wood: {inv.wood}, Gold: {inv.gold}'
+        text_surf = font.render(text, False, (0, 0, 0))
+        screen.blit(text_surf, (10, 0))
+        
+        text_surf = font.render(f'Base HP: {base.health}', False, (0, 0, 0))
+        screen.blit(text_surf, (10, 30))
         
         pygame.display.flip()
             

@@ -34,7 +34,7 @@ def AABB_collision_resolution(dynamic_obj: Sprite, static_obj: Sprite):
         p = static_projs[i][1] - dynamic_projs[i][0]
         
         if p <= 0:
-            return
+            return False
         
         if p < min_p:
             min_p = p
@@ -44,3 +44,4 @@ def AABB_collision_resolution(dynamic_obj: Sprite, static_obj: Sprite):
     dynamic_obj.pos.x += min_axis_p[0] * min_p
     dynamic_obj.pos.y += min_axis_p[1] * min_p
     dynamic_obj.update_rect()
+    return True

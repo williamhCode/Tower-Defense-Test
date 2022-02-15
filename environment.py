@@ -20,13 +20,13 @@ class EnvObject(ABC, pygame.sprite.Sprite):
         
         self.health = 0
         
-        self.damaged = False
+        self.is_damaged = False
         self.elapsed_time = 0
         self.cooldown = 0.3
         
-    def damage(self, amount):
+    def damaged(self, amount):
         self.health -= amount
-        self.damaged = True
+        self.is_damaged = True
         self.elapsed_time = 0
         self.current_sprite = 1
         return self.health <= 0
@@ -39,10 +39,10 @@ class EnvObject(ABC, pygame.sprite.Sprite):
         if self.health <= 0:
             self.kill()
             
-        if self.damaged:
+        if self.is_damaged:
             self.elapsed_time += dt
             if self.elapsed_time > self.cooldown:
-                self.damaged = False
+                self.is_damaged = False
                 self.current_sprite = 0
             
         self.image = self.sprites[self.current_sprite]
