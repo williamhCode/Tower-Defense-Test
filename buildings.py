@@ -114,7 +114,8 @@ class Tower(Building):
         pygame.draw.circle(screen, BLACK, (self.pos.x+TILE_SIZE/2, self.pos.y+TILE_SIZE/2), self.range, 1)
         
     def update(self, dt):
-        self.attack_elapsed_time += dt
+        if self.attack_elapsed_time < self.attack_cooldown:
+            self.attack_elapsed_time += dt
         super().update(dt)
 
 

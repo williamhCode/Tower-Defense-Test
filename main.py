@@ -13,7 +13,6 @@ import time
 import math
 import random
 
-
 from collision import AABB_collision_resolution
 
 
@@ -38,8 +37,7 @@ class GroupWrapper:
         self.sprites = sprites
     
     def update(self, dt):
-        for group in self.sprite_groups:
-            group.update(dt)
+        self.group.update(dt)
             
     def draw(self, surface):
         for group in self.sprite_groups:
@@ -231,7 +229,7 @@ def main():
                 tower.draw_range(screen)
                 
         inv = player.inventory
-        text = f'Stone: {inv.stone}, Wood: {inv.wood}, Gold: {inv.gold}'
+        text = f'Stone: {inv.stone}, Wood: {inv.wood}, Gold: {inv.gold} $_#_%_&_*_nice@gmail.com'
         text_surf = font.render(text, False, (0, 0, 0))
         screen.blit(text_surf, (10, 0))
         
